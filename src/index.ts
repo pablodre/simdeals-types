@@ -14,3 +14,9 @@ export type {
   VariantHistory,
   PriceHistoryResponse,
 } from "./price-history.js";
+
+export type {
+  CanonicalOffer,
+  CanonicalOffers,
+  OffersResponse,
+} from "./catalog.js";
