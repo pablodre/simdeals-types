@@ -3,23 +3,15 @@ export type ProductStore = {
   name: string;
 };
 
-/**
- * Brand of the closed catalogue (`brands` in simdeals). The admin manages the list and resolves the
- * raw texts the stores give, so a product only carries a brand once someone reviewed it: until then
- * it is `null`.
- */
-export type ProductBrand = {
-  /** Stable identifier, what `?brand=` takes. */
-  slug: string;
-  /** What to show ("Moza Racing"). */
-  label: string;
-};
-
 export type Product = {
   id: string;
   title: string;
   handle: string;
-  brand: ProductBrand | null;
+  /**
+   * Brand name to show ("Moza Racing"). simdeals resolves the store's raw text against its own
+   * catalogue and sends the label; `?brand=` takes that brand's slug instead.
+   */
+  brand: string | null;
   model: string | null;
   category: string | null;
   sku: string | null;

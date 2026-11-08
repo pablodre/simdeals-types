@@ -1,6 +1,5 @@
 export type {
   Product,
-  ProductBrand,
   ProductStore,
   ProductStoreOffer,
   CanonicalProduct,
