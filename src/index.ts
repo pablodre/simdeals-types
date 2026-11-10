@@ -19,4 +19,12 @@ export type {
   CanonicalOffer,
   CanonicalOffers,
   OffersResponse,
+  CatalogItemState,
+  CatalogItem,
+  CatalogResponse,
+  CreateCanonicalBody,
+  CreateCanonicalResponse,
+  CatalogPricePoint,
+  CatalogPriceSeries,
+  CanonicalPriceHistory,
 } from "./catalog.js";

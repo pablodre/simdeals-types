@@ -9,7 +9,9 @@ Tipos TypeScript compartidos que describen las respuestas de la API de SimDeals
 src/index.ts          Re-exporta todo con `export type { ... }`
 src/products.ts       Product, ProductStore, ProductStoreOffer, CanonicalProduct*, ProductsResponse
 src/price-history.ts  PricePoint, StoreHistory, VariantHistory, PriceHistoryResponse
-src/catalog.ts        CanonicalOffer, CanonicalOffers, OffersResponse (GET /api/catalog/offers, para Simdeck)
+src/catalog.ts        La API de Simdeck: CanonicalOffer/CanonicalOffers/OffersResponse (GET /api/catalog/offers),
+                      CatalogItem/CatalogResponse (GET /api/catalog), CreateCanonicalBody/CreateCanonicalResponse
+                      (POST /api/catalog/canonicals) y CanonicalPriceHistory (GET /api/catalog/:id/price-history)
 ```
 
 Se publica como `@pablodre/simdeals-types` y se consume desde GitHub
@@ -19,9 +21,15 @@ Se publica como `@pablodre/simdeals-types` y se consume desde GitHub
 ## Reglas
 
 - Estos tipos son el contrato de `GET /api/products` (`ProductsResponse`) y
-  `GET /api/products/:id/price-history` (`PriceHistoryResponse`), y de `GET /api/catalog/offers` (`OffersResponse`).
+  `GET /api/products/:id/price-history` (`PriceHistoryResponse`) para la web, y de toda la API de Simdeck:
+  `GET /api/catalog/offers` (`OffersResponse`), `GET /api/catalog` (`CatalogResponse`),
+  `POST /api/catalog/canonicals` (`CreateCanonicalBody` / `CreateCanonicalResponse`) y
+  `GET /api/catalog/:id/price-history` (`CanonicalPriceHistory`).
   La fuente de verdad es `simdeals/apps/api/src/products/products.service.ts` y, para el catálogo,
   `simdeals/apps/api/src/catalog/catalog.types.ts` (copia idéntica): compara siempre con ese código antes de cambiar nada.
+- **Aquí no van valores**, solo tipos: los límites y constantes de esa copia (longitudes máximas, cuántos artículos
+  puede pedir un usuario al día) se cuentan en los comentarios, no se exportan como `const`.
+- Los endpoints de `/api/catalog` (menos `offers`) piden el token del entorno; en Simdeck es `SIMDEALS_API_TOKEN`.
 - Unidades de precio **distintas según endpoint**: en `ProductsResponse` (`minPrice`, `maxCompareAtPrice`) y en
   `OffersResponse` (`minPrice`, `price`, `compareAtPrice`) son enteros en **céntimos**; en `PriceHistoryResponse` (`PricePoint.price`, `compareAtPrice`) la API
   divide entre 100 y devuelve **euros** con decimales.
