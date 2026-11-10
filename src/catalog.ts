@@ -42,9 +42,11 @@ export type OffersResponse = Record<string, CanonicalOffers>;
  * - `published`: on sale (canonical `promoted`), the only state with offers and a page;
  * - `pending` / `rejected`: a user of that environment asked for it and it is not published yet;
  * - `merged`: it was merged into another item (`mergedIntoId` is the final destination);
- * - `retired`: published once and withdrawn.
+ * - `retired`: published once and withdrawn;
+ * - `removed`: an admin discarded it (it was nonsense and matched nothing): Simdeck drops it from every
+ *   setup, as if nobody had ever added it. Only the environments that asked for it get it.
  */
-export type CatalogItemState = "published" | "pending" | "rejected" | "retired" | "merged";
+export type CatalogItemState = "published" | "pending" | "rejected" | "retired" | "merged" | "removed";
 
 export type CatalogItem = {
   /** The canonical's uuid: what Simdeck stores in a setup. */
