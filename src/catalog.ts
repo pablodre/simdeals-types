@@ -187,6 +187,12 @@ export type DealItem = {
   productId: string;
   /** 0-100. Only meaningful as an order. */
   score: number;
+  /**
+   * Users of this environment with the item in their setup, as Simdeck last sent it with
+   * `PUT /api/catalog/setup-owners`. 0 when nobody has it. It moves the item up the list; it can also be shown
+   * ("45 drivers use it").
+   */
+  setupOwners: number;
 };
 
 export type DealsFacets = {
@@ -194,6 +200,8 @@ export type DealsFacets = {
   brands: { slug: string; label: string; count: number }[];
   /** Every store with deals today, asked for or not; `isDefault` is what simdeals' admin preselects. */
   stores: { slug: string; name: string; count: number; isDefault: boolean }[];
+  /** Same for categories: `isDefault` marks the ones simdeals shows when the request asks for none. */
+  categories: { slug: string; label: string; count: number; isDefault: boolean }[];
 };
 
 export type DealsResponse = {
@@ -206,5 +214,22 @@ export type DealsResponse = {
   computedAt: string | null;
   /** The ranking is more than 36 h old: decide whether to show the section. */
   stale: boolean;
+  /** When Simdeck last sent the setup counts of this environment; null if it never did. */
+  setupOwnersAt: string | null;
   facets: DealsFacets;
+};
+
+/**
+ * Body of `PUT /api/catalog/setup-owners`: how many distinct users have each canonical id in their setup
+ * (`UserGear.canonicalId`, as stored: simdeals follows merges). The **whole** list of the environment of the
+ * token; it replaces the previous one. Ids not repeated, `owners` > 0, at most 10 000 entries.
+ */
+export type SetupOwnersBody = { items: { canonicalId: string; owners: number }[] };
+
+export type SetupOwnersResponse = {
+  received: number;
+  /** Canonicals stored after following merges. */
+  stored: number;
+  /** Ids simdeals does not know, ignored. */
+  unknown: number;
 };
