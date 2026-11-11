@@ -13,6 +13,14 @@ export type CanonicalOffer = {
   price: number | null;
   /** Cents, from the same variant as `price`. */
   compareAtPrice: number | null;
+  /**
+   * Name of the configuration `price` is for, as the store calls it ("2 Pedales / Sin Base"). Set when the
+   * product has several configurations at different prices and a person chose which one is the item; null
+   * when there is nothing to explain (one price, or identified by its barcode) or there is no price.
+   */
+  variantTitle: string | null;
+  /** The store sells dearer configurations of this product today: show `price` as a "from" price. */
+  fromPrice: boolean;
   /** Some eligible variant is available (same as `price !== null`). */
   available: boolean;
   updatedAt: string;
