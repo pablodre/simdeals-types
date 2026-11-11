@@ -23,6 +23,14 @@ export type CanonicalOffer = {
   fromPrice: boolean;
   /** Some eligible variant is available (same as `price !== null`). */
   available: boolean;
+  /**
+   * Cents: `price` when there is one. Otherwise the last price the worker saw for this offer, which is sold out
+   * or was withdrawn by the store: show it as a price of the past, never as one to buy at. Null only when the
+   * offer never had a price.
+   */
+  lastPrice: number | null;
+  /** When the worker last saw `lastPrice` at the store; null without it. */
+  lastPriceAt: string | null;
   updatedAt: string;
 };
 
@@ -35,6 +43,16 @@ export type CanonicalOffers = {
   imageUrl: string | null;
   /** Cents: minimum of the non-null offer prices, or null. */
   minPrice: number | null;
+  /**
+   * Cents: `minPrice` when there is one. Otherwise the cheapest `lastPrice` of the offers: what the item cost
+   * the last time a store had it. Null when no store ever had a price for it.
+   */
+  lastPrice: number | null;
+  /**
+   * Some store sells it today (same as `minPrice !== null`). False with a `lastPrice` means the item is no longer
+   * on sale anywhere: Simdeck shows that price marked as such.
+   */
+  available: boolean;
   currency: "EUR";
   offers: CanonicalOffer[];
 };
