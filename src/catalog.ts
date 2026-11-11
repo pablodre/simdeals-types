@@ -140,3 +140,67 @@ export type CanonicalPriceHistory = {
   /** Cheapest point of the window (earliest day of that price), or null if there was never one. */
   lowest: { price: number; date: string; storeId: string } | null;
 };
+
+// ---------- GET /api/catalog/deals (plan docs/plans/simdeck-deals.md in simdeals, section 5) ----------
+// The deal list: what is really cheap today, ranked by how good the drop is against what that same variant
+// used to cost. Needs the environment's token, like the catalog itself.
+//
+// Two things worth knowing before using it:
+// - `compareAtPrice` is what the store declares as the old price (63 % of the live catalog carries one), so
+//   it is shown but it never means "this is a deal". The signal is `dropFromMedianBp` + `isWindowLow`.
+// - the headline may only name `coverageFrom`, the oldest price simdeals has of that item ("the lowest since
+//   3 September"). The window is 90 days, but the data does not always go that far back.
+
+export type DealItem = {
+  canonicalId: string;
+  /** Never null: only published items are listed. */
+  slug: string;
+  name: string;
+  brand: { slug: string | null; label: string };
+  /** Simdeck's `GearType`; `OTHER` when its category has no mapping. */
+  gearType: string;
+  category: string;
+  imageUrl: string | null;
+  /** Cents: the price right now, re-read when the request is served. */
+  price: number;
+  /** Cents: the old price the store declares, or null. */
+  compareAtPrice: number | null;
+  /** Cents: cheapest and median day before this price started, of the variant that gives it. */
+  windowMinPrice: number;
+  windowMedianPrice: number;
+  /** Drop against `windowMedianPrice` in basis points (1 250 = 12,5 %). */
+  dropFromMedianBp: number;
+  /** Cheaper than every day before `priceSince`. */
+  isWindowLow: boolean;
+  /** When this price started. */
+  priceSince: string;
+  /** Oldest price simdeals has of this item: the only span a headline may name. */
+  coverageFrom: string;
+  store: { id: string; slug: string; name: string };
+  /** How many stores sell it today, whatever stores the request asked for. */
+  storeCount: number;
+  /** Simdeck builds the store link as /api/go/<productId>. */
+  productId: string;
+  /** 0-100. Only meaningful as an order. */
+  score: number;
+};
+
+export type DealsFacets = {
+  gearTypes: { value: string; count: number }[];
+  brands: { slug: string; label: string; count: number }[];
+  /** Every store with deals today, asked for or not; `isDefault` is what simdeals' admin preselects. */
+  stores: { slug: string; name: string; count: number; isDefault: boolean }[];
+};
+
+export type DealsResponse = {
+  items: DealItem[];
+  page: number;
+  pageSize: number;
+  /** Items matching the filters. It can be slightly above what is servable: see `price`. */
+  total: number;
+  /** When the ranking was computed; null when there is nothing. The prices are from now. */
+  computedAt: string | null;
+  /** The ranking is more than 36 h old: decide whether to show the section. */
+  stale: boolean;
+  facets: DealsFacets;
+};
