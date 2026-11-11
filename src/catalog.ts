@@ -148,8 +148,10 @@ export type CanonicalPriceHistory = {
 // Two things worth knowing before using it:
 // - `compareAtPrice` is what the store declares as the old price (63 % of the live catalog carries one), so
 //   it is shown but it never means "this is a deal". The signal is `dropFromMedianBp` + `isWindowLow`.
-// - the headline may only name `coverageFrom`, the oldest price simdeals has of that item ("the lowest since
-//   3 September"). The window is 90 days, but the data does not always go that far back.
+// - the headline may only name `comparedFrom`, the first day the price was really compared with ("its lowest in
+//   Simufy since 14 August"): the window is 90 days and the data does not always go that far back.
+// - pages are cut by ranking positions before the live price drops anything, so a page can come back short or
+//   **empty** while later pages still have items. Page on `hasMore`, never on the number of items received.
 
 export type DealItem = {
   canonicalId: string;
@@ -178,8 +180,13 @@ export type DealItem = {
   isWindowLow: boolean;
   /** When this price started. */
   priceSince: string;
-  /** Oldest price simdeals has of this item: the only span a headline may name. */
+  /** Oldest capture simdeals has of the variant that gives the price. Informative: never name it in a headline. */
   coverageFrom: string;
+  /**
+   * First day the price was really compared with (`YYYY-MM-DD`, Madrid day): the later of `coverageFrom` and the
+   * first day of the 90-day window. The only date a headline may name ("its lowest in <store> since 14 August").
+   */
+  comparedFrom: string;
   store: { id: string; slug: string; name: string };
   /** How many stores sell it today, whatever stores the request asked for. */
   storeCount: number;
@@ -208,8 +215,10 @@ export type DealsResponse = {
   items: DealItem[];
   page: number;
   pageSize: number;
-  /** Items matching the filters. It can be slightly above what is servable: see `price`. */
+  /** Ranking positions matching the filters. It can be slightly above what is servable: see `price`. */
   total: number;
+  /** There are ranking positions after this page (`page × pageSize < total`), even if this page came back empty. */
+  hasMore: boolean;
   /** When the ranking was computed; null when there is nothing. The prices are from now. */
   computedAt: string | null;
   /** The ranking is more than 36 h old: decide whether to show the section. */
