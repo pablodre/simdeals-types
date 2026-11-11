@@ -153,8 +153,12 @@ export type CanonicalPriceHistory = {
 
 export type DealItem = {
   canonicalId: string;
-  /** Never null: only published items are listed. */
-  slug: string;
+  /**
+   * The item page in Simdeck, or **null** when it has none: deals are not limited to published items, so
+   * an unpublished one links straight to its store with `productId`. Offer "add to my setup" only when this
+   * is not null: an unpublished `canonicalId` must never be stored in a setup.
+   */
+  slug: string | null;
   name: string;
   brand: { slug: string | null; label: string };
   /** Simdeck's `GearType`; `OTHER` when its category has no mapping. */
