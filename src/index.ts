@@ -29,6 +29,7 @@ export type {
   CanonicalPriceHistory,
   DealItem,
   DealPageResponse,
+  DealPageSummary,
   DealsFacets,
   DealsResponse,
 } from "./catalog.js";
