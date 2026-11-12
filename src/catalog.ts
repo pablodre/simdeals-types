@@ -229,6 +229,23 @@ export type DealsFacets = {
   categories: { slug: string; label: string; count: number; isDefault: boolean }[];
 };
 
+/**
+ * `GET /catalog/deals/:id`: the page Simdeck shows for an item of the deal list that has no page of its own,
+ * published or not, only while the list could show it (404 otherwise). Same `offers` as `/catalog/offers` and
+ * same `history` as `/:id/price-history?days=all`. An unpublished item's `canonicalId` must not end up in a setup.
+ */
+export type DealPageResponse = {
+  canonicalId: string;
+  slug: string | null;
+  published: boolean;
+  name: string;
+  brand: { slug: string | null; label: string };
+  gearType: string;
+  imageUrl: string | null;
+  offers: CanonicalOffers;
+  history: CanonicalPriceHistory;
+};
+
 export type DealsResponse = {
   items: DealItem[];
   page: number;
