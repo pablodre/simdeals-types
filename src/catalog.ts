@@ -244,6 +244,28 @@ export type DealPageResponse = {
   imageUrl: string | null;
   offers: CanonicalOffers;
   history: CanonicalPriceHistory;
+  /**
+   * Why it is a deal, with the same numbers as its card in the list: the usual price to strike and the
+   * "−X %". `null` when the deal is gone since last night's ranking (the store stopped selling it at an
+   * eligible price, or the live price went back up): show the page without it.
+   */
+  deal: DealPageSummary | null;
+};
+
+/** The deal of `DealPageResponse`: the fields of `DealItem` that explain the drop, for the store the list shows. */
+export type DealPageSummary = {
+  store: { id: string; slug: string; name: string };
+  /** Cents: the live price in that store, re-read when the request is served. */
+  price: number;
+  /** Cents: median and cheapest day before `priceSince`, of the variant that gives the price. */
+  windowMedianPrice: number;
+  windowMinPrice: number;
+  /** Drop of `price` against `windowMedianPrice`, in basis points, as `DealItem.dropFromMedianBp`. */
+  dropFromMedianBp: number;
+  isWindowLow: boolean;
+  priceSince: string;
+  /** First day really compared with (`YYYY-MM-DD`, Madrid): the only date a headline may name. */
+  comparedFrom: string;
 };
 
 export type DealsResponse = {
