@@ -160,6 +160,9 @@ export type CatalogPriceSeries = {
 
 export type CanonicalPriceHistory = {
   canonicalId: string;
+  /** The market of the series (`?market=`, `eu` by default): only its stores, prices in `currency`. */
+  market: string;
+  currency: string;
   /** Days asked for, or `all` (the whole history). */
   days: number | "all";
   /** First and last day of the window, in `Europe/Madrid`. */
@@ -281,6 +284,10 @@ export type DealPageSummary = {
 };
 
 export type DealsResponse = {
+  /** The market of the list (`?market=`, `eu` by default): only its stores. */
+  market: string;
+  /** Its currency (`EUR`, `USD`): every price of the list is in it. */
+  currency: string;
   items: DealItem[];
   page: number;
   pageSize: number;
