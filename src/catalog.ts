@@ -53,7 +53,8 @@ export type CanonicalOffers = {
    * on sale anywhere: Simdeck shows that price marked as such.
    */
   available: boolean;
-  currency: "EUR";
+  /** The currency of the market asked for: `EUR` (the default, `eu`) or `USD` (`us`). */
+  currency: string;
   offers: CanonicalOffer[];
 };
 
@@ -250,6 +251,13 @@ export type DealPageResponse = {
    * eligible price, or the live price went back up): show the page without it.
    */
   deal: DealPageSummary | null;
+  /**
+   * Stores that sell it in several configurations at different prices, none pinned as the item (R9, decision
+   * 2.14 of docs/plans/gear-catalog-browse.md): `offers` leaves them out because nobody knows which one is the
+   * item, so the page says "choose the configuration in the store" with the cheapest one on sale today. Never a
+   * price of the item: not in `minPrice`, deals or alerts. Cheapest first; empty when there is none.
+   */
+  configurable: { productId: string; store: { id: string; name: string }; fromPrice: number }[];
 };
 
 /** The deal of `DealPageResponse`: the fields of `DealItem` that explain the drop, for the store the list shows. */
@@ -299,3 +307,85 @@ export type SetupOwnersResponse = {
   /** Ids simdeals does not know, ignored. */
   unknown: number;
 };
+
+// ---------- GET /api/catalog/items (docs/plans/gear-catalog-browse.md, 4.1) ----------
+// The whole catalog for Simdeck's `/gear`: every canonical with a store behind it, published or not, on sale or
+// not. Same deal as the rest of this file: copy of `apps/api/src/catalog/catalog.types.ts` in simdeals, kept in sync by hand.
+
+/**
+ * What an item costs in one market (plan docs/plans/markets.md): prices of different markets are never mixed or
+ * compared. `availability` says which of the three cases of decision 2.1 it is:
+ * - `available`: some store of the market sells it today at an eligible price (`price`);
+ * - `from`: the store sells several configurations at different prices and nobody pinned which one is the item
+ *   (R9, decision 2.14): `fromPrice` is the cheapest one, informative only ("several configurations, from X");
+ * - `unavailable`: no store of the market sells it today; `lastPrice` is the most recent price it was seen at,
+ *   with its store and day (decision 2.13), or null if it never had one.
+ */
+export type CatalogItemPrice = {
+  market: string;
+  currency: string;
+  availability: "available" | "from" | "unavailable";
+  /** Cents: today's best eligible price (rule 4.4 and R9, read when the snapshot was built). */
+  price: number | null;
+  /** Cents: the old price the store declares for that same variant. Shown, never ranked on. */
+  compareAtPrice: number | null;
+  /** The store product that gives `price`: Simdeck links to the store with /api/go/<productId>. */
+  productId: string | null;
+  /** Stores of this market selling it today at an eligible price. */
+  storeCount: number;
+  /** Cents, only with `availability: "from"`. */
+  fromPrice: number | null;
+  /** Cents and ISO date, only with `availability: "unavailable"`. */
+  lastPrice: number | null;
+  lastPriceAt: string | null;
+  lastStore: { id: string; slug: string; name: string } | null;
+  /**
+   * Drop of `price` against the usual price of its store, in basis points, when it is a deal today (the same
+   * `liveDealDrop` as `/catalog/deals`, the best of its stores). Null when it is not.
+   */
+  dropFromMedianBp: number | null;
+};
+
+export type CatalogListItem = {
+  canonicalId: string;
+  /** Its page in Simdeck, or null while it is not published: link to `/gear/item/<canonicalId>` then. */
+  slug: string | null;
+  published: boolean;
+  name: string;
+  brand: { slug: string | null; label: string };
+  gearType: string;
+  category: string;
+  imageUrl: string | null;
+  /** Users of the requesting environment with it in their setup (decision 2.17 of the deals plan). */
+  setupOwners: number;
+  /** The price in the market of the request. */
+  price: CatalogItemPrice;
+  /** Every market where some store of the item is, keyed by market (`eu`, `us`). */
+  prices: Record<string, CatalogItemPrice>;
+};
+
+export type CatalogItemsFacets = {
+  gearTypes: { value: string; count: number }[];
+  brands: { slug: string; label: string; count: number }[];
+  /** Stores that sell or sold some item of the list, of any market. */
+  stores: { slug: string; name: string; market: string; count: number }[];
+  categories: { slug: string; label: string; count: number }[];
+};
+
+export type CatalogItemsResponse = {
+  items: CatalogListItem[];
+  page: number;
+  pageSize: number;
+  /** Items matching the filters. Every page is full except the last one. */
+  total: number;
+  hasMore: boolean;
+  /** The market of `price` and of the price sorts. */
+  market: string;
+  /** When the prices were read (the snapshot lives CATALOG_ITEMS_SNAPSHOT_TTL_MS). */
+  generatedAt: string;
+  /** When Simdeck last sent the setup counts of this environment; null if it never did. */
+  setupOwnersAt: string | null;
+  facets: CatalogItemsFacets;
+};
+
+export type CatalogItemsSort = "popular" | "name" | "price" | "priceDesc" | "drop";
