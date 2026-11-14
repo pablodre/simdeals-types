@@ -73,7 +73,19 @@ export type OffersResponse = Record<string, CanonicalOffers>;
  * - `removed`: an admin discarded it (it was nonsense and matched nothing): Simdeck drops it from every
  *   setup, as if nobody had ever added it. Only the environments that asked for it get it.
  */
-export type CatalogItemState = "published" | "pending" | "rejected" | "retired" | "merged" | "removed";
+export type CatalogItemState =
+  | "published"
+  | "pending"
+  | "rejected"
+  | "retired"
+  | "merged"
+  | "removed"
+  /**
+   * Never published, handed to this environment because a user followed its price there
+   * (`POST /api/catalog/items/:id/follow`). It may be followed and its offers read
+   * (`/catalog/items/offers`), but it has no page and never goes in a setup.
+   */
+  | "unlisted";
 
 export type CatalogItem = {
   /** The canonical's uuid: what Simdeck stores in a setup. */
